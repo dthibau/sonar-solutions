@@ -1,0 +1,57 @@
+### Spécificités projet ####
+/src/main/resources/static/plbsi-ui
+/data/plbconsult_rec.sql
+/data/*dump*.sql
+formationindexes/
+**/emails-recus/
+**/backups/
+
+HELP.md
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+/bin/
+.metadata
+
+# JMETER
+*.log
+*.jtl
+*.tgz
+*.gz
+*.tmp
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+**/.attach*
+
+*.orig
+*_BACKUP_*
+*_BASE_*
+*_LOCAL_*
+*_REMOTE_*
