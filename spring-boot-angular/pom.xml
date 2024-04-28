@@ -21,6 +21,7 @@
         <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
         <sonar.sources>src/main/java,src/main/js</sonar.sources>
         <sonar.exclusions>**/*.css,src/main/js/application/src/polyfill.ts,src/main/java/**/entities/*.java</sonar.exclusions>
+        <sonar.coverage.exclusions>src/main/js/**/*.*, src/main/java/**/entities/*.java, src/main/java/**/repositories/*.java</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
