@@ -1,0 +1,93 @@
+pipeline {
+  agent any
+   options {
+        buildDiscarder(logRotator(numToKeepStr: "20"))
+   }
+   tools {
+      jdk 'JDK17'
+    }
+
+   stages {
+    stage('Parallel Stage') {
+      parallel {
+        stage('Unit test') {
+
+          environment {
+            SPRING_PROFILES_ACTIVE = 'int'
+          }
+          steps {  echo 'Testing..'   
+            sh './mvnw -Pint -Dmaven.test.failure.ignore=true clean test'
+          }
+          post {
+            always {
+              junit 'target/surefire-reports/TEST-*.xml'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Analyse sonar') {
+       steps {
+        echo 'A compléter..' 
+        withSonarQubeEnv('SONAR_LOCAL') {
+          sh './mvnw sonar:sonar'  
+        }
+       }
+     }
+
+    stage("Quality Gate"){
+      steps {
+        echo 'En attente Quality Gate Status ..' 
+        script {
+          timeout(time: 5, unit: 'MINUTES') { 
+            withSonarQubeEnv('SONAR_LOCAL') {
+              checkSonarQualityGate()
+            }
+          }
+        }       
+     }
+    }
+
+    stage("Déploiement en préprod"){
+      steps {
+        echo "Déploiement en préprod"
+      }
+    }
+  
+    
+  }
+}
+
+def checkSonarQualityGate(){
+    // Get properties from report file to call SonarQube 
+    def sonarReportProps = readProperties  file: 'target/sonar/report-task.txt'
+    def sonarServerUrl = sonarReportProps['serverUrl']
+    def ceTaskUrl = sonarReportProps['ceTaskUrl']
+    def ceTask
+
+    // Get task informations to get the status
+    timeout(time: 4, unit: 'MINUTES') {
+        waitUntil {
+            def response = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: ${ceTaskUrl}", returnStdout: true).trim()
+            ceTask = readJSON text: response
+
+            echo ceTask.toString()
+            return "SUCCESS".equals(ceTask['task']['status'])
+        }
+    }
+
+    // Get project analysis informations to check the status
+    def ceTaskAnalysisId = ceTask['task']['analysisId']
+    def qualitygate
+
+    def response = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: ${sonarServerUrl}/api/qualitygates/project_status?analysisId=${ceTaskAnalysisId}", returnStdout: true).trim()
+    qualitygate =  readJSON text: response
+
+    echo qualitygate.toString()
+    if ("ERROR".equals(qualitygate['projectStatus']['status'])) {
+        unstable "Quality Gate failure"
+    }
+}
+
+
